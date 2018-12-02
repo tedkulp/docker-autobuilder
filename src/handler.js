@@ -44,14 +44,19 @@ const sendMessage = (foundConfig, title, message) => {
 };
 
 const handler = async (req, res) => {
+    console.log('We have a request');
     const repoName = _.get(req, 'body.repository.full_name');
     if (repoName) {
         const foundConfig = findItemInConfig(repoName);
+        console.log('foundConfig', foundConfig);
         if (foundConfig) {
             const foundTag = findTagInConfig(foundConfig, _.get(req, 'body.ref'));
+            console.log('foundTag', foundTag);
             if (foundTag) {
                 const fullTagName = [_.get(foundConfig, 'docker_hub.repo'), foundTag].filter(e => !!e).join(':');
+                console.log('fullTagName', fullTagName);
                 const repoObj = await git.cloneRepo(_.get(req, 'body.repository.clone_url'));
+                console.log('repoObj', repoObj);
                 if (repoObj) {
                     const commit = await git.checkoutCommit(repoObj, _.get(req, 'body.after'));
                     if (commit) {
