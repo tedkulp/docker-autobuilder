@@ -16,6 +16,14 @@ const findItemInConfig = (repoName) => {
 };
 
 const findTagInConfig = (foundConfig, branchName) => {
+    if (!foundConfig) {
+        return foundConfig;
+    }
+
+    if (!branchName) {
+        return branchName;
+    }
+
     const branches = _.get(foundConfig, 'branches', {});
     const regex = new RegExp('\{branch_name\}', 'g')
 
