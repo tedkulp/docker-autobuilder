@@ -1,0 +1,29 @@
+{
+    "repos": [
+        {
+            "github": {
+                "repo": "user/repo"
+            },
+            "docker_hub": {
+                "repo": "user/repo"
+            },
+            "branches": {
+                "master": "latest",
+                "*": "{branch_name}"
+            },
+            "pushbullet": {
+                "message": true
+            }
+        }
+    ],
+    "credentials": {
+        "docker_hub": {
+            "email": "email@domain.com",
+            "password": "password",
+            "username": "username"
+        },
+        "pushbullet": {
+            "apiKey": "1234567890abcdef"
+        }
+    }
+}
