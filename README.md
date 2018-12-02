@@ -29,5 +29,5 @@ The easiest thing to do is deploy this with docker:
 
 ``docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -p 3000:3000 -v `pwd`/config.json:/app/config/config.json tedkulp/docker-autobuilder:latest``
 
-* Create _push_ webhook in repository to point to `https://mynodeserver:3000/webhooks`
+* Create _push_ webhook in repository to point to `https://mynodeserver:3000/webhooks` and has a content type of `application/json`.
 * Profit?
