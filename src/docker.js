@@ -27,10 +27,10 @@ const build = async (tagName) => {
 
 
 const authconfig = {
-    auth: "",
+    auth: '',
     email: _.get(config, 'credentials.docker_hub.email'),
     password: _.get(config, 'credentials.docker_hub.password'),
-    serveraddress: "https://index.docker.io/v1",
+    serveraddress: 'https://index.docker.io/v1',
     username: _.get(config, 'credentials.docker_hub.username'),
 };
 
