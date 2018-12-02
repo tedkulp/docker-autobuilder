@@ -22,11 +22,12 @@ The easiest thing to do is deploy this with docker:
 
 * Create a config file somewhere:
 
-    curl https://raw.githubusercontent.com/tedkulp/docker-autobuilder/master/config/config.json.example > config.json
+`curl https://raw.githubusercontent.com/tedkulp/docker-autobuilder/master/config/config.json.example > config.json`
 
 * Modify config file with actual credentials
-* Run w/ docker
-    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -p 3000:3000 -v `pwd`/config:/app/config tedkulp/docker-autobuilder:latest
+* Run w/ docker:
+
+``docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -p 3000:3000 -v `pwd`/config:/app/config tedkulp/docker-autobuilder:latest``
+
 * Create _push_ webhook in repository to point to `https://mynodeserver:3000/webhooks`
 * Profit?
-
