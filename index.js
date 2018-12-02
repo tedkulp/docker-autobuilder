@@ -6,6 +6,7 @@ const handler = require('./src/handler');
 
 const app = express();
 app.use(bodyParser.json());
+app.get('/ping', (req, res) => res.send('PONG'));
 app.post('/webhook', handler);
 
 const port = process.env.PORT || 3000;
