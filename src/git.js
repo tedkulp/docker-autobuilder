@@ -8,11 +8,15 @@ const cloneRepo = (cloneUrl) => {
 }
 
 const checkoutCommit = (repoObj, commitId) => {
-    if (repoObj) {
-        return repoObj.getCommit(commitId);
-    }
-
-    return Promise.reject();
+    return repoObj
+        .getCommit(commitId)
+        .then(commit => {
+            return Git.Checkout
+                .tree(repoObj, commit, {checkoutStrategy: Git.Checkout.STRATEGY.SAFE})
+                .then(function () {
+                    return repoObj.setHeadDetached(commit, repoObj.defaultSignature, "Checkout: HEAD " + commit.id());
+                });
+        });
 };
 
 module.exports = {

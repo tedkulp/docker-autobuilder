@@ -1,4 +1,5 @@
 const express = require('express');
+const asyncHandler = require('express-async-handler');
 const bodyParser = require('body-parser');
 const shutdownMgr = require('@moebius/http-graceful-shutdown');
 
@@ -6,12 +7,12 @@ const handler = require('./src/handler');
 
 const app = express();
 app.use(bodyParser.json());
-app.get('/ping', (req, res) => res.send('PONG'));
-app.post('/webhook', handler);
+app.get('/ping', (_req, res) => res.send('PONG'));
+app.post('/webhook', asyncHandler(handler));
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
-    console.log(`Now listening on port ${port}`);
+    console.log(`Now listening -- on port ${port}`);
 });
 
 const shutdownManager = new shutdownMgr.GracefulShutdownManager(server);

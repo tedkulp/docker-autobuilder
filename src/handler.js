@@ -67,9 +67,12 @@ const handler = async (req, res) => {
                 console.log('repoObj', repoObj);
                 if (repoObj) {
                     const commit = await git.checkoutCommit(repoObj, _.get(req, 'body.after'));
-                    if (commit) {
+                    console.log('commit', commit);
+                    if (!_.isUndefined(commit)) {
+                        console.log('checked out id.  starting build...');
                         const finishBuild = await docker.build(fullTagName).catch(err => console.error('Error Building...', err));
                         if (finishBuild) {
+                            console.log('finished build');
                             docker.push(fullTagName).then((msgs) => {
                                 return sendMessage(foundConfig, 'Finished Build', `Build has been pushed to ${fullTagName}`);
                             }).catch(err => console.error('Error Pushing to Docker Hub', err));
