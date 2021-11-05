@@ -1,0 +1,20 @@
+projects:
+  test:
+    github: user/repo
+    docker_hub: user/repo
+    branches:
+      master: latest
+      '*': '{branch_name}'
+    notifications:
+      - telegram
+      - pushbullet
+credentials:
+  github:
+    api_key: ljsdfkljsdflkjsdlfkjlkj
+  docker_hub:
+    email: email@domain.com
+    password: password
+    username: username
+  apprise:
+    telegram: tgram://12345:abcdefghijklimnopqrst/12345
+    pushbullet: pbul://AbcdEfGHIjklMNoPqRStuvwXYz
