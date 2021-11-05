@@ -8,6 +8,7 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
+import { PushEvent } from '@octokit/webhooks-types';
 
 import { WebService } from './web.service';
 
@@ -37,7 +38,28 @@ export class WebController {
   }
 
   @Post('webhook')
-  async webhook(@Body() _body: unknown) {
-    return null;
+  async webhook(@Body() body: PushEvent) {
+    const { projectId, branch, commitId, project } =
+      this.webService.parsePushEvent(body);
+
+    if (!projectId || !branch) {
+      this.logger.error('Invalid webhook payload');
+      throw new HttpException(
+        'Invalid push event payload',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    this.logger.debug(
+      `Received webhook payload for project: ${projectId}, branch: ${branch}, commit: ${commitId}`,
+    );
+
+    if (!project) {
+      throw new HttpException('Project Not Found', HttpStatus.NOT_FOUND);
+    }
+
+    this.webService.startBuild(project, branch, commitId);
+
+    return project;
   }
 }

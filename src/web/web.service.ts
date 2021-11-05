@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { PushEvent } from '@octokit/webhooks-types';
 import { ConfigService } from 'src/config/config.service';
 import { DockerService } from 'src/docker/docker.service';
 import { GitService } from 'src/git/git.service';
@@ -15,6 +16,52 @@ export class WebService {
     private dockerService: DockerService,
     private notificationService: NotificationsService,
   ) {}
+
+  parsePushEvent(body: PushEvent): {
+    projectId: any;
+    branch: any;
+    commitId: any;
+    repo: any;
+    project: ConfigProject;
+  } {
+    this.logger.verbose(body);
+
+    const fullName = body.repository?.full_name;
+    // TODO: This is gross
+    const { projectId, project } = this.getProjectFromRepo(fullName) || {
+      projectId: undefined,
+      project: undefined,
+    };
+
+    const result = {
+      projectId: projectId,
+      branch: body.ref,
+      commitId: body.after,
+      repo: fullName,
+      project: project,
+    };
+
+    this.logger.verbose(result);
+
+    return result;
+  }
+
+  getProjectFromRepo(repo: string): {
+    project?: ConfigProject;
+    projectId?: string;
+  } {
+    const projects =
+      this.configService.get<Record<string, ConfigProject>>('projects');
+
+    const projectId = Object.keys(projects).find(
+      (projectId) => repo === projects[projectId]?.github,
+    );
+
+    return {
+      project: projects[projectId] || undefined,
+      projectId: projectId,
+    };
+  }
 
   getProject(projectId: string): ConfigProject | undefined {
     const projects =
@@ -65,7 +112,11 @@ export class WebService {
     );
   }
 
-  async startBuild(project: ConfigProject, githubBranch = 'master') {
+  async startBuild(
+    project: ConfigProject,
+    githubBranch = 'master',
+    commitId?: string,
+  ) {
     const dockerTag = this.getDockerTagFromBranchName(project, githubBranch);
     const fullPathToDest = `${project.docker_hub}:${dockerTag}`;
 
@@ -84,7 +135,9 @@ export class WebService {
     this.logger.verbose(repo, 'repo');
 
     if (repo) {
-      const commit = await this.gitService.checkoutBranch(repo, githubBranch);
+      const commit = commitId
+        ? await this.gitService.checkoutCommit(repo, commitId)
+        : await this.gitService.checkoutBranch(repo, githubBranch);
       this.logger.verbose(commit, 'commit');
 
       if (commit && commit.result === 0) {
