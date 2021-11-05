@@ -19,10 +19,22 @@ export class WebController {
   constructor(private webService: WebService) {}
 
   @Get('trigger/:project_id/:branch?')
-  async trigger(
+  async triggerGet(
     @Param('project_id') projectId: string,
     @Param('branch') branch = 'master',
   ) {
+    return this.trigger(projectId, branch);
+  }
+
+  @Post('trigger/:project_id/:branch?')
+  async triggerPost(
+    @Param('project_id') projectId: string,
+    @Param('branch') branch = 'master',
+  ) {
+    return this.trigger(projectId, branch);
+  }
+
+  private trigger(projectId: string, branch = 'master') {
     this.logger.debug(
       `Received trigger for project: ${projectId}, branch: ${branch}`,
     );
