@@ -49,10 +49,10 @@ export class WebController {
     return foundProject;
   }
 
-  @Post('webhook')
-  async webhook(@Body() body: PushEvent) {
+  @Post('webhook/github')
+  async githubWebhook(@Body() body: PushEvent) {
     const { projectId, branch, commitId, project } =
-      this.webService.parsePushEvent(body);
+      this.webService.parseGithubPushEvent(body);
 
     if (!projectId || !branch) {
       this.logger.error('Invalid webhook payload');
@@ -63,7 +63,7 @@ export class WebController {
     }
 
     this.logger.debug(
-      `Received webhook payload for project: ${projectId}, branch: ${branch}, commit: ${commitId}`,
+      `Received Github push payload for project: ${projectId}, branch: ${branch}, commit: ${commitId}`,
     );
 
     if (!project) {

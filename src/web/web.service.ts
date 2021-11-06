@@ -17,7 +17,7 @@ export class WebService {
     private notificationService: NotificationsService,
   ) {}
 
-  parsePushEvent(body: PushEvent): {
+  parseGithubPushEvent(body: PushEvent): {
     projectId: any;
     branch: any;
     commitId: any;
