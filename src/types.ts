@@ -4,9 +4,16 @@ export type ConfigCredentials = {
   apprise?: Record<string, string>;
 };
 
+export type GithubProjectDetails = {
+  repo: string;
+  secret?: string;
+}
+
 export type ConfigProject = {
   // test:
-  //   github: user/repo
+  //   github:
+  //     repo: user/repo
+  //     secret: 12345
   //   docker_hub: user/repo
   //   branches:
   //     master: latest
@@ -14,7 +21,7 @@ export type ConfigProject = {
   //   notifications:
   //     - pushbullet
   //     - telegram
-  github: string;
+  github: GithubProjectDetails;
   docker_hub: string;
   branches: Record<string, string>;
   notifications?: string[];

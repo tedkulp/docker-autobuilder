@@ -5,6 +5,7 @@ import { DockerService } from 'src/docker/docker.service';
 import { GitService } from 'src/git/git.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { ConfigProject } from 'src/types';
+import { Webhooks } from '@octokit/webhooks';
 
 @Injectable()
 export class WebService {
@@ -15,7 +16,7 @@ export class WebService {
     private gitService: GitService,
     private dockerService: DockerService,
     private notificationService: NotificationsService,
-  ) {}
+  ) { }
 
   parseGithubPushEvent(body: PushEvent): {
     projectId: any;
@@ -46,6 +47,11 @@ export class WebService {
     return result;
   }
 
+  async checkGithubSignature(project: ConfigProject, body: PushEvent, signature: string) {
+    const wh = new Webhooks({ secret: project?.github?.secret.toString() })
+    return wh.verify(body, signature);
+  }
+
   getProjectFromRepo(repo: string): {
     project?: ConfigProject;
     projectId?: string;
@@ -54,7 +60,7 @@ export class WebService {
       this.configService.get<Record<string, ConfigProject>>('projects');
 
     const projectId = Object.keys(projects).find(
-      (projectId) => repo === projects[projectId]?.github,
+      (projectId) => repo === projects[projectId]?.github?.repo,
     );
 
     return {
@@ -126,11 +132,11 @@ export class WebService {
     }
 
     this.logger.debug(
-      `Starting build of repo ${project.github}:${githubBranch} to ${fullPathToDest}`,
+      `Starting build of repo ${project.github.repo}:${githubBranch} to ${fullPathToDest}`,
     );
 
     const repo = await this.gitService.cloneRepo(
-      `https://github.com/${project.github}.git`,
+      `https://github.com/${project.github.repo}.git`,
     );
     this.logger.verbose(repo, 'repo');
 

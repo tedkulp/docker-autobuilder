@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpException,
   HttpStatus,
   Logger,
@@ -16,7 +17,7 @@ import { WebService } from './web.service';
 export class WebController {
   private readonly logger = new Logger(WebController.name);
 
-  constructor(private webService: WebService) {}
+  constructor(private webService: WebService) { }
 
   @Get('trigger/:project_id/:branch?')
   async triggerGet(
@@ -50,7 +51,7 @@ export class WebController {
   }
 
   @Post('webhook/github')
-  async githubWebhook(@Body() body: PushEvent) {
+  async githubWebhook(@Body() body: PushEvent, @Headers('x-hub-signature-256') signature: string) {
     const { projectId, branch, commitId, project } =
       this.webService.parseGithubPushEvent(body);
 
@@ -60,6 +61,17 @@ export class WebController {
         'Invalid push event payload',
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
+    }
+
+    if (project?.github?.secret) {
+      const isValid = await this.webService.checkGithubSignature(project, body, signature);
+      if (!isValid) {
+        this.logger.error('Payload failed validation');
+        throw new HttpException(
+          'Payload failed validation',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
     }
 
     this.logger.debug(
