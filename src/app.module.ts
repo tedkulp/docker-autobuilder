@@ -1,3 +1,4 @@
+import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 
 import { ConfigModule } from './config/config.module';
@@ -8,11 +9,17 @@ import { WebModule } from './web/web.module';
 
 @Module({
   imports: [
+    BullModule.forRoot({
+      redis: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: 6379,
+      },
+    }),
+    ConfigModule,
     DockerModule,
     GitModule,
-    WebModule,
-    ConfigModule,
     NotificationsModule,
+    WebModule,
   ],
 })
 export class AppModule {}

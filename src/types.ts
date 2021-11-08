@@ -26,3 +26,9 @@ export type ConfigProject = {
   branches: Record<string, string>;
   notifications?: string[];
 };
+
+export type BuildJob = {
+  project: ConfigProject;
+  githubBranch: string;
+  commitId?: string;
+}

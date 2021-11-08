@@ -84,6 +84,6 @@ export class WebController {
 
     this.webService.startBuild(project, branch, commitId);
 
-    return project;
+    return { status: 'Build queued' };
   }
 }
