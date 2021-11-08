@@ -1,12 +1,16 @@
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { PushEvent } from '@octokit/webhooks-types';
 import { ConfigService } from 'src/config/config.service';
 import { DockerService } from 'src/docker/docker.service';
 import { GitService } from 'src/git/git.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
-import { ConfigProject } from 'src/types';
+import { BuildJob, ConfigProject } from 'src/types';
+import { Webhooks } from '@octokit/webhooks';
+import { Job, Queue } from 'bull';
 
 @Injectable()
+@Processor('build')
 export class WebService {
   private readonly logger = new Logger(WebService.name);
 
@@ -15,7 +19,8 @@ export class WebService {
     private gitService: GitService,
     private dockerService: DockerService,
     private notificationService: NotificationsService,
-  ) {}
+    @InjectQueue('build') private readonly buildQueue: Queue,
+  ) { }
 
   parseGithubPushEvent(body: PushEvent): {
     projectId: any;
@@ -46,6 +51,11 @@ export class WebService {
     return result;
   }
 
+  async checkGithubSignature(project: ConfigProject, body: PushEvent, signature: string) {
+    const wh = new Webhooks({ secret: project?.github?.secret.toString() })
+    return wh.verify(body, signature);
+  }
+
   getProjectFromRepo(repo: string): {
     project?: ConfigProject;
     projectId?: string;
@@ -54,7 +64,7 @@ export class WebService {
       this.configService.get<Record<string, ConfigProject>>('projects');
 
     const projectId = Object.keys(projects).find(
-      (projectId) => repo === projects[projectId]?.github,
+      (projectId) => repo === projects[projectId]?.github?.repo,
     );
 
     return {
@@ -117,6 +127,19 @@ export class WebService {
     githubBranch = 'master',
     commitId?: string,
   ) {
+    await this.buildQueue.add('build', {
+      project,
+      githubBranch,
+      commitId,
+    });
+  }
+
+  @Process('build')
+  async handleBuild(job: Job<BuildJob>) {
+    const { project, githubBranch, commitId } = job.data;
+
+    job.moveToCompleted
+
     const dockerTag = this.getDockerTagFromBranchName(project, githubBranch);
     const fullPathToDest = `${project.docker_hub}:${dockerTag}`;
 
@@ -126,11 +149,11 @@ export class WebService {
     }
 
     this.logger.debug(
-      `Starting build of repo ${project.github}:${githubBranch} to ${fullPathToDest}`,
+      `Starting build of repo ${project.github.repo}:${githubBranch} to ${fullPathToDest}`,
     );
 
     const repo = await this.gitService.cloneRepo(
-      `https://github.com/${project.github}.git`,
+      `https://github.com/${project.github.repo}.git`,
     );
     this.logger.verbose(repo, 'repo');
 

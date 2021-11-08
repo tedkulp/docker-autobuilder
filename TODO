@@ -3,4 +3,4 @@ Todo:
   ✔ Add handler back for webhooks (need to capture push data again) @done(21-11-05 21:59)
   ✔ Update docs for changes @done(21-11-06 16:25)
     ✔ Write about the use case for direct trigger vs webhook @done(21-11-06 16:25)
-  ☐ Ability to secure webhook
+  ✔ Ability to secure webhook

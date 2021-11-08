@@ -1,6 +1,8 @@
 projects:
   test:
-    github: user/repo
+    github:
+      repo: user/repo
+      secret: 12345
     docker_hub: user/repo
     branches:
       master: latest
