@@ -17,7 +17,7 @@ import { WebService } from './web.service';
 export class WebController {
   private readonly logger = new Logger(WebController.name);
 
-  constructor(private webService: WebService) { }
+  constructor(private webService: WebService) {}
 
   @Get('trigger/:project_id/:branch?')
   async triggerGet(
@@ -47,11 +47,14 @@ export class WebController {
 
     this.webService.startBuild(foundProject, branch);
 
-    return foundProject;
+    return { status: 'Build queued' };
   }
 
   @Post('webhook/github')
-  async githubWebhook(@Body() body: PushEvent, @Headers('x-hub-signature-256') signature: string) {
+  async githubWebhook(
+    @Body() body: PushEvent,
+    @Headers('x-hub-signature-256') signature: string,
+  ) {
     const { projectId, branch, commitId, project } =
       this.webService.parseGithubPushEvent(body);
 
@@ -64,7 +67,11 @@ export class WebController {
     }
 
     if (project?.github?.secret) {
-      const isValid = await this.webService.checkGithubSignature(project, body, signature);
+      const isValid = await this.webService.checkGithubSignature(
+        project,
+        body,
+        signature,
+      );
       if (!isValid) {
         this.logger.error('Payload failed validation');
         throw new HttpException(

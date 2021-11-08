@@ -1,13 +1,13 @@
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
+import { Webhooks } from '@octokit/webhooks';
 import { PushEvent } from '@octokit/webhooks-types';
+import { Job, Queue } from 'bull';
 import { ConfigService } from 'src/config/config.service';
 import { DockerService } from 'src/docker/docker.service';
 import { GitService } from 'src/git/git.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { BuildJob, ConfigProject } from 'src/types';
-import { Webhooks } from '@octokit/webhooks';
-import { Job, Queue } from 'bull';
 
 @Injectable()
 @Processor('build')
@@ -20,7 +20,7 @@ export class WebService {
     private dockerService: DockerService,
     private notificationService: NotificationsService,
     @InjectQueue('build') private readonly buildQueue: Queue,
-  ) { }
+  ) {}
 
   parseGithubPushEvent(body: PushEvent): {
     projectId: any;
@@ -51,8 +51,12 @@ export class WebService {
     return result;
   }
 
-  async checkGithubSignature(project: ConfigProject, body: PushEvent, signature: string) {
-    const wh = new Webhooks({ secret: project?.github?.secret.toString() })
+  async checkGithubSignature(
+    project: ConfigProject,
+    body: PushEvent,
+    signature: string,
+  ) {
+    const wh = new Webhooks({ secret: project?.github?.secret.toString() });
     return wh.verify(body, signature);
   }
 
@@ -136,9 +140,9 @@ export class WebService {
 
   @Process('build')
   async handleBuild(job: Job<BuildJob>) {
-    const { project, githubBranch, commitId } = job.data;
+    this.logger.verbose(`Received job: ${job}`);
 
-    job.moveToCompleted
+    const { project, githubBranch, commitId } = job.data;
 
     const dockerTag = this.getDockerTagFromBranchName(project, githubBranch);
     const fullPathToDest = `${project.docker_hub}:${dockerTag}`;
@@ -155,7 +159,8 @@ export class WebService {
     const repo = await this.gitService.cloneRepo(
       `https://github.com/${project.github.repo}.git`,
     );
-    this.logger.verbose(repo, 'repo');
+
+    this.logger.verbose(JSON.stringify(repo));
 
     if (repo) {
       const commit = commitId
