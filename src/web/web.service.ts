@@ -140,7 +140,7 @@ export class WebService {
 
   @Process('build')
   async handleBuild(job: Job<BuildJob>) {
-    this.logger.verbose(`Received job: ${job}`);
+    this.logger.verbose(`Received job: ${JSON.stringify(job)}`);
 
     const { project, githubBranch, commitId } = job.data;
 
