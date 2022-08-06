@@ -7,7 +7,7 @@ export type ConfigCredentials = {
 export type GithubProjectDetails = {
   repo: string;
   secret?: string;
-}
+};
 
 export type ConfigProject = {
   // test:
@@ -31,4 +31,4 @@ export type BuildJob = {
   project: ConfigProject;
   githubBranch: string;
   commitId?: string;
-}
+};

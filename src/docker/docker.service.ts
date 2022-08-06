@@ -8,7 +8,7 @@ export class DockerService {
   private readonly logger = new Logger(DockerService.name);
   private docker = new Docker();
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) { }
 
   private displayStreamMessage(msg: { stream?: string; status?: string }) {
     const ex = msg?.stream || msg?.status;
@@ -25,6 +25,7 @@ export class DockerService {
       },
       {
         t: tagName,
+        pull: "true",
       },
     );
 
